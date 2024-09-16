@@ -1,7 +1,7 @@
 # VidSage
 https://www.youtube.com/watch?v=IUSCWtB9jWk
 
-Vidsage focuses on processing video data, storing it in Azure AI services, and enabling advanced local and global querying through techniques - Azure AI Search (Native RAG), Graph-based Retrieval (Graph RAG), Open AI CLIP Model (Image Embeddings), Azure GPT-4o.
+VidSage focuses on processing video data, storing it in Azure AI services, and enabling advanced local and global querying through techniques - Azure AI Search (Native RAG), Graph-based Retrieval (Graph RAG), Open AI CLIP Model (Image Embeddings), Azure GPT-4o.
 
 ## Table of Contents
 
@@ -29,22 +29,26 @@ Platform intelligent multi-modal chunking strategy helps it to point to the exac
 The architecture consists of several stages:
 
 1. **Video Upload**: Videos are uploaded to the repository.
+
 2. **Processing**: Extract text using Azure Speech-to-Text (STT) service with speaker diarization and image keyframes from the videos.
+
+3. **Transcript Enhancement**: 
+   - Text transcripts are enhanced with keyframe descriptions using **Azure OpenAI GPT-4o**.
+
 3. **Embedding Creation**: 
    - Text embeddings are generated using the **Azure OpenAI Ada embedding model**.
    - Image embeddings are generated using **OpenAI CLIP model**.
+
 4. **Azure AI Search**:
    - Store text embeddings in a **text index**.
    - Store image embeddings in an **image index**.
-5. **Transcript Enhancement**: 
-   - Text transcripts are enhanced with keyframe descriptions using **Azure OpenAI GPT-4o**.
-    
+
 6. **GRAPH RAG**:
    - Graph database to create a graph for our enhanced transcripts.
-   - For any video, we create a Video node and summary node which contains video text transcript, Summary of the transcript as well as all the topics, features, issues, speakers and sentiment of the video.
-   - Agentic chunking to convert all the sentences in a transcript to standalone sentences and then chunk the transcripts into relevant and meaningful chunks using GPT 4o mini. These chunks are connected to Video node.
-   - For every chunk we extract triplets in form of entities and relationships and connect it the respective chunks.
-   - Entity Disambiguation to ensure that the entities with similar name and meaning are not repeated.
+   - For the GraphRAG we use advanced agentic chunking to convert all the sentences in a transcript to standalone sentences and then chunk the transcripts into relevant and meaningful chunks using GPT 4o mini. These chunks are connected to Video node.
+   - For any video, we extract all the entities and relationships along with it, we create a Video node and summary node which contains video text transcript, Summary of the transcript as well as all the topics, features, issues, speakers and sentiment of the video.
+   - Whenever a new video gets uploaded we use entity disambiguation to ensure that the entities with similar name and meaning are not repeated.
+   - Graph is structured in a way that any point of time it represents the overall discussions happening through all the videos processed by the platform. This helps the Graph RAG to better answer queries compared to native RAG. Native RAG will be able to answer based only on the chunks retrieved which may miss out the overall knowledge representation.
     
 6. **Storage**: Enhanced text transcripts and image keyframes are stored in **Azure Vector Index** for efficient retrieval.
 
@@ -59,10 +63,10 @@ The architecture consists of several stages:
 
 ## Technology Stack
 
+- **Azure AI Search** for text and image indexes and retrieval
 - **Azure Speech-to-Text** (STT) with speaker diarization
 - **Azure OpenAI** (Ada embedding model, GPT-4o)
 - **OpenAI CLIP** for image embeddings
-- **Azure AI Search** for text and image indexes
 - **Graph RAG** for graph-based retrieval
 - **Entity and Relationship Extraction** for knowledge graph construction
 
@@ -70,12 +74,12 @@ The architecture consists of several stages:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/your-repo.git
-   cd your-repo
+   git clone git@github.com:sujithrkumar/ms_raghack.git
+   cd rag_hack/api
    ```
 
 2. **Install Dependencies**:
-   Make sure you have Python 3.8+ installed. Then, install the required dependencies:
+   Make sure you have Python 3.8+ (Tested with Python 3.10) installed. Then, install the required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
@@ -89,8 +93,24 @@ The architecture consists of several stages:
 4. **Environment Variables**:
    Set your Azure credentials in an `.env` file in the root directory:
    ```bash
-   AZURE_API_KEY=<your-azure-api-key>
-   AZURE_ENDPOINT=<your-azure-endpoint>
+   IS_DEV="True"
+   SPEECH_KEY="<Azure STT Key"
+   SPEECH_REGION="<STT region>"
+   AZURE_STORAGE_CONNECTION_STRING="<Azure BLOB storage connection string>"
+   BLOB_ACCOUNT_KEY="<BLOB account key>"
+   AZURE_OPENAI_KEY="<Azure OpenAI Key>"
+   AZURE_OPENAI_ENDPOINT="<Azure OpenAI endpoint>"
+   AZURE_SEARCH_API_KEY="<Azure AI Search API Key>"
+   AZURE_SEARCH_ENDPOINT="<Azure AI Search Endpoint>"
+   AZURE_OPENAI_ENDPOINT_EMBED="<Azure OpenAI Embedding Endpoint>"
+   AZURE_OPENAI_API_KEY_EMBED="<Azure OpenAI Embedding Key>"
+   AZURE_OPENAI_API_VERSION_EMBED="<Azure OpenAI API Version>"
+   NEO4J_URI = "<NEO4J URI>"
+   NEO4J_USERNAME = "<NEO4J Username>"
+   NEO4J_PASSWORD = "<NEO4J password>"
+   AURA_INSTANCEID = "<AURA instance ID>"
+   AURA_INSTANCENAME = "<AURA instance name>"
+   PRIVATE_OPENAI_API_KEY = "<OpenAI GPT4o mini key for graph db data ingestion>"
    ```
    
 ## Querying
